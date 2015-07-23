@@ -3,9 +3,6 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-/**
- * Created by samhaves on 15-05-21.
- */
 public class ColorChooser extends JFrame {
 
     JColorChooser colorChooser = new JColorChooser();

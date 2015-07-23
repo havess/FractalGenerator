@@ -1,23 +1,19 @@
 import javax.rmi.CORBA.Util;
 import javax.swing.*;
 import java.awt.*;
-import java.util.Random;
 
-/**
- * Created by samhaves on 15-05-13.
- */
 public class Circles extends Fractal{
     Utilities util = new Utilities();
 
-    public Circles(int width, int height, int iter, int zoom,int xShift,int  yShift, Color color,boolean random, JPanel panel, ID id) {
-        super(width, height, iter, zoom, xShift, yShift,color,random, panel, id);
+    public Circles(int width, int height, int iter, int zoom,int xShift,int  yShift, Color color, JPanel panel, ID id) {
+        super(width, height, iter, zoom, xShift, yShift,color, panel, id);
 
     }
 
     public void drawCircle(Graphics g, int x1, int y1, int iter, int radius) {
         if(iter >= 0) {
 
-            if(random) {
+            if(Window.getInstance().isRandom()) {
                 Color iterationColor = util.generateRandom(color);
                 g.setColor(iterationColor);
             }
@@ -26,9 +22,8 @@ public class Circles extends Fractal{
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
             g2d.setStroke(new BasicStroke(0.1f * radius));
-            if((x1 + xShift + radius < 0 ) || (x1 + xShift - radius> panel.getWidth())
-            		|| (y1 + yShift + radius < 0 ) || (y1 + yShift - radius > panel.getWidth())){
-            }else{
+            if(!((x1 + xShift + radius < 0 ) || (x1 + xShift - radius> panel.getWidth())
+            		|| (y1 + yShift + radius < 0 ) || (y1 + yShift - radius > panel.getWidth()))){
             	g2d.drawOval(x1 + xShift, y1 + yShift, radius, radius);
            }
 
@@ -40,7 +35,8 @@ public class Circles extends Fractal{
 
     }
 
-    protected void paintComponent(Graphics g){
+
+    protected void drawFractal(Graphics g){
         g.setColor(color);
         drawCircle(g, width / 2 - (zoom*zoom)/2, height/2 - (zoom*zoom)/2, iter , zoom * zoom);
     }

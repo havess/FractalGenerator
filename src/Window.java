@@ -1,91 +1,77 @@
 import javax.swing.*;
-import javax.swing.border.BevelBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import java.util.LinkedList;
 
-/**
- * Created by samhaves on 15-05-12.
- */
-public class Window extends JFrame{
+public class Window{
 
 	private static final long serialVersionUID = 1L;
+    private static Window instance;
     private final static Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
+    JFrame frame;
     JPanel container, optionsPanel;
     JButton draw, colorChooserButton, printButton, plus, minus;
-    JComboBox<String> fractalType, iterations, randomColors;
+    JComboBox<String> fractalType, iterations;
+    JComboBox<String> randomColors;
     JLabel fractalLabel, iterLabel, randomColorLabel,emptySpace, zoomLabel, xLabel, yLabel;
     JSlider zoomSlider, xSlider, ySlider;
     private DrawingPanel drawingPanel;
 
     private ID curId ;
-    private int xShift = 0, yShift = 0;
-    private int zoom = 1;
 
 
+    private final Color defaultColor = new Color(255,255,255);
+    private Color previousColor = defaultColor;
 
-    private final static Color defaultColor = new Color(255,255,255);
-    private Color previousColor;
-
-    private boolean random = false;
-    public static ArrayList<Fractal> fractals = new ArrayList<Fractal>();
+    public static ArrayList<Fractal> fractals = new ArrayList<>();
 
     String[] fractalTypes = {
             "Tree",
             "Circles"
-    },
-
-    iterationNums = {
-            "1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18"
-    },
-    randomColorsTypes = {
+    }, randomColorsTypes = {
             "Solid Color",
             "Pastels",
             "Forest",
             "Ocean"
     };
 
+    int [] iterationNums =  {
+            1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20
+    };
+
+
 
     public static void main(String[] args){
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                new Window().setVisible(true);
-            }
-        });
+        getInstance();
     }
 
    public Window(){
-       super("Fractal Generator");
+       frame = new JFrame("Fractal Generator");
 
        Color optionsPanelColor = new Color(2,2,2);
        
        //GUI
        setLookAndFeel();
-       setSize(screenSize);
-       setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-       setResizable(false);
+       frame.setSize(screenSize);
+       frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+       frame.setResizable(false);
 
        container = new JPanel();
        container.setSize(screenSize);
        container.setLayout(new BoxLayout(container, BoxLayout.LINE_AXIS));
 
        drawingPanel = new DrawingPanel();
-       drawingPanel.setPreferredSize(new Dimension(getWidth() - 200, getHeight()));
+       drawingPanel.setPreferredSize(new Dimension(frame.getWidth() - 200, frame.getHeight()));
        drawingPanel.setBackground(new Color(20, 20, 20));
        container.add(drawingPanel);
 
        optionsPanel = new JPanel();
-       optionsPanel.setPreferredSize(new Dimension(200, getHeight()));
-       optionsPanel.setMinimumSize(new Dimension(200, getHeight()));
-       optionsPanel.setMaximumSize(new Dimension(200, getHeight()));
+       optionsPanel.setPreferredSize(new Dimension(200, frame.getHeight()));
+       optionsPanel.setMinimumSize(new Dimension(200, frame.getHeight()));
+       optionsPanel.setMaximumSize(new Dimension(200, frame.getHeight()));
        optionsPanel.setBackground(optionsPanelColor);
        optionsPanel.setBorder(BorderFactory.createLineBorder(Color.black));
        optionsPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 100, 5));
@@ -97,8 +83,8 @@ public class Window extends JFrame{
 
        fractalType  = new JComboBox<>();
        fractalType.setPreferredSize(new Dimension(190, 20));
-       for(int i = 0; i < fractalTypes.length; i++){
-           fractalType.addItem(fractalTypes[i]);
+       for (String fractalType1 : fractalTypes) {
+           fractalType.addItem(fractalType1);
        }
        optionsPanel.add(fractalType);
 
@@ -110,8 +96,8 @@ public class Window extends JFrame{
 
        iterations  = new JComboBox<>();
        iterations.setPreferredSize(new Dimension(190, 20));
-       for(int i = 0; i < iterationNums.length; i++){
-           iterations.addItem(iterationNums[i]);
+       for (int iterationNum : iterationNums) {
+           iterations.addItem(Integer.toString(iterationNum));
        }
        optionsPanel.add(iterations);
 
@@ -122,37 +108,33 @@ public class Window extends JFrame{
 
        randomColors  = new JComboBox<>();
        randomColors.setPreferredSize(new Dimension(190, 20));
-       for(int i = 0; i < randomColorsTypes.length; i++){
-           randomColors.addItem(randomColorsTypes[i]);
+       for (String randomColorsType : randomColorsTypes) {
+           randomColors.addItem(randomColorsType);
        }
-       randomColors.addActionListener(new ActionListener() {
+       randomColors.addActionListener(e -> {
+           JComboBox temp = (JComboBox) e.getSource();
+           String selectedItem = (String) temp.getSelectedItem();
 
-           public void actionPerformed(ActionEvent e) {
-               JComboBox temp = (JComboBox) e.getSource();
-               String selectedItem = (String) temp.getSelectedItem();
-               if (!selectedItem.equals(randomColorsTypes[0])) {
-                   colorChooserButton.setEnabled(false);
-                   for (Fractal tempFrac : fractals) {
-                       tempFrac.random = true;
-                       previousColor = tempFrac.getColor();//pour retourner a la couleur choisi auparavant
-                       //les couleurs initiales pour certains types de couleurs "random"
-                       if (selectedItem.equals(randomColorsTypes[1])) {
-                           tempFrac.color = new Color(255, 255, 255); //pastels
-                       } else if (selectedItem.equals(randomColorsTypes[2])) {
-                           tempFrac.color = new Color(57, 255, 15); //forest
-                       } else if (selectedItem.equals(randomColorsTypes[3])) {
-                           tempFrac.color = new Color(3, 128, 255); //ocean
-                       }
-                   }
-               } else {
-                   colorChooserButton.setEnabled(true);
-                   for (Fractal tempFrac : fractals) {
-                       tempFrac.random = false;
-                       tempFrac.color = previousColor;
+           if (!selectedItem.equals(randomColorsTypes[0])) {
+               colorChooserButton.setEnabled(false);
+               for (Fractal tempFrac : fractals) {
+                   previousColor = tempFrac.getColor();
+
+                   if (selectedItem.equals(randomColorsTypes[1])) {
+                       tempFrac.color = new Color(255, 255, 255); //pastels
+                   } else if (selectedItem.equals(randomColorsTypes[2])) {
+                       tempFrac.color = new Color(57, 255, 15); //forest
+                   } else if (selectedItem.equals(randomColorsTypes[3])) {
+                       tempFrac.color = new Color(3, 128, 255); //ocean
                    }
                }
-
+           } else {
+               colorChooserButton.setEnabled(true);
+               for (Fractal tempFrac : fractals) {
+                   tempFrac.color = previousColor;
+               }
            }
+
        });
        optionsPanel.add(randomColors);
 
@@ -229,17 +211,14 @@ public class Window extends JFrame{
        ySlider.setPaintTicks(true);
        ySlider.setPaintLabels(false);
        ySlider.setValue(0);
-       ySlider.addChangeListener(new ChangeListener() {
-           @Override
-           public void stateChanged(ChangeEvent e) {
-               drawingPanel.paintComponent(drawingPanel.getGraphics());
-          
-               for (Fractal temp : fractals) {
-                   temp.yShift = ySlider.getValue();
-               }
+       ySlider.addChangeListener(e -> {
+           drawingPanel.paintComponent(drawingPanel.getGraphics());
 
-               drawingPanel.repaint();
+           for (Fractal temp : fractals) {
+               temp.yShift = ySlider.getValue();
            }
+
+           drawingPanel.repaint();
        });
        optionsPanel.add(ySlider);
 
@@ -258,15 +237,12 @@ public class Window extends JFrame{
        xSlider.setPaintTicks(true);
        xSlider.setPaintLabels(false);
        xSlider.setValue(0);
-       xSlider.addChangeListener(new ChangeListener() {
-           @Override
-           public void stateChanged(ChangeEvent e) {
-               drawingPanel.paintComponent(drawingPanel.getGraphics());
-               for (Fractal temp : fractals) {
-                   temp.xShift = xSlider.getValue();
-               }
-               drawingPanel.repaint();
+       xSlider.addChangeListener(e -> {
+           drawingPanel.paintComponent(drawingPanel.getGraphics());
+           for (Fractal temp : fractals) {
+               temp.xShift = xSlider.getValue();
            }
+           drawingPanel.repaint();
        });
        optionsPanel.add(xSlider);
 
@@ -292,11 +268,10 @@ public class Window extends JFrame{
        optionsPanel.add(filler);
 
        container.add(optionsPanel);
-       add(container);
-
+       frame.add(container);
+       frame.setVisible(true);
        init();
-       
-       //MouseListeners et ChangeListeners
+
        colorChooserButton.addMouseListener(new MouseAdapter() {
 
            @Override
@@ -339,16 +314,13 @@ public class Window extends JFrame{
            }
        });
        
-       zoomSlider.addChangeListener(new ChangeListener() {
-           @Override
-           public void stateChanged(ChangeEvent e) {
-               drawingPanel.paintComponent(drawingPanel.getGraphics());
-               
-               for (Fractal temp : fractals) {
-                   temp.zoom = zoomSlider.getValue();
-               }
-               drawingPanel.repaint();
+       zoomSlider.addChangeListener(e -> {
+           drawingPanel.paintComponent(drawingPanel.getGraphics());
+
+           for (Fractal temp : fractals) {
+               temp.zoom = zoomSlider.getValue();
            }
+           drawingPanel.repaint();
        });
 
        draw.addMouseListener(new MouseAdapter() {
@@ -356,7 +328,6 @@ public class Window extends JFrame{
            @Override
            public void mouseClicked(MouseEvent e) {
                drawingPanel.paintComponent(drawingPanel.getGraphics());
-
                checkComboBox();
 
                for (Fractal temp : fractals) {
@@ -367,10 +338,16 @@ public class Window extends JFrame{
        });
 
    }
-   	//ajoute les fractales a la liste
     private void init(){
-        fractals.add(new Tree(this.getWidth() - 200,this.getHeight() - 200, iter, zoom, xShift, yShift,defaultColor,random, drawingPanel, ID.Tree));
-        fractals.add(new Circles(this.getWidth() - 200,this.getHeight() - 200, iter, zoom, xShift, yShift,defaultColor,random, drawingPanel, ID.Circles));
+        fractals.add(new Tree(frame.getWidth() - 200,frame.getHeight() - 200, 0, 1, 0, 0,defaultColor, drawingPanel, ID.Tree));
+        fractals.add(new Circles(frame.getWidth() - 200,frame.getHeight() - 200, 0, 1, 0, 0,defaultColor, drawingPanel, ID.Circles));
+    }
+
+    public static Window getInstance() {
+        if(instance == null) {
+            instance = new Window();
+        }
+        return instance;
     }
     
     private void setLookAndFeel() {
@@ -382,11 +359,15 @@ public class Window extends JFrame{
 		
 	}
 
+    public boolean isRandom(){
+        return randomColors.getSelectedIndex() != 0;
+    }
+
     private void checkComboBox(){
 
-        String chosenFrac = fractalType.getSelectedItem().toString();
+        String chosenFractal = fractalType.getSelectedItem().toString();
         
-        switch(chosenFrac){
+        switch(chosenFractal){
             case "Circles":
                 this.curId = ID.Circles;
                 break;
@@ -396,8 +377,7 @@ public class Window extends JFrame{
         }
 
     }
-    
-    //JPanel ou on dessine les fractales
+
     private class DrawingPanel extends JPanel {
 
         public DrawingPanel(){
@@ -412,9 +392,7 @@ public class Window extends JFrame{
 
         @Override
         public void repaint(){
-            for(Fractal temp: fractals){
-                if (temp.getID() == curId) temp.paintComponent(this.getGraphics());
-            }
+            fractals.stream().filter(temp -> temp.getID() == curId).forEach(temp -> temp.drawFractal(this.getGraphics()));
 
         }
 

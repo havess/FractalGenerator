@@ -1,6 +1,3 @@
-/**
- * Created by samhaves on 15-06-09.
- */
 
 import java.awt.*;
 import java.awt.event.*;
