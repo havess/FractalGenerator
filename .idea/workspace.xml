@@ -1,14 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="3583bd7c-189c-4071-9dbc-4d474b01c25b" name="Default" comment="cleaning up">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/Circles.java" afterPath="$PROJECT_DIR$/src/Circles.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/ColorChooser.java" afterPath="$PROJECT_DIR$/src/ColorChooser.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/Fractal.java" afterPath="$PROJECT_DIR$/src/Fractal.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/PrintPanel.java" afterPath="$PROJECT_DIR$/src/PrintPanel.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/Tree.java" afterPath="$PROJECT_DIR$/src/Tree.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/Window.java" afterPath="$PROJECT_DIR$/src/Window.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/vcs.xml" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
+    <list default="true" id="3583bd7c-189c-4071-9dbc-4d474b01c25b" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="ra.iws" />
@@ -34,8 +27,8 @@
       <file leaf-file-name="Tree.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/Tree.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.5620609">
-              <caret line="16" column="10" selection-start-line="16" selection-start-column="10" selection-end-line="16" selection-end-column="10" />
+            <state vertical-scroll-proportion="0.52693206">
+              <caret line="15" column="78" selection-start-line="15" selection-start-column="78" selection-end-line="15" selection-end-column="78" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -509,6 +502,13 @@
       <option name="number" value="Default" />
       <updated>1431450018693</updated>
     </task>
+    <task id="LOCAL-00001" summary="cleaning up">
+      <created>1437695611138</created>
+      <option name="number" value="00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1437695611138</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -1062,8 +1062,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/Tree.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.5620609">
-          <caret line="16" column="10" selection-start-line="16" selection-start-column="10" selection-end-line="16" selection-end-column="10" />
+        <state vertical-scroll-proportion="0.52693206">
+          <caret line="15" column="78" selection-start-line="15" selection-start-column="78" selection-end-line="15" selection-end-column="78" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
