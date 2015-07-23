@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 /**
@@ -16,19 +17,26 @@ import java.util.LinkedList;
 public class Window extends JFrame{
 
 	private static final long serialVersionUID = 1L;
-	JPanel container, optionsPanel;
+    private final static Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+
+    JPanel container, optionsPanel;
     JButton draw, colorChooserButton, printButton, plus, minus;
     JComboBox<String> fractalType, iterations, randomColors;
     JLabel fractalLabel, iterLabel, randomColorLabel,emptySpace, zoomLabel, xLabel, yLabel;
     JSlider zoomSlider, xSlider, ySlider;
     private DrawingPanel drawingPanel;
+
     private ID curId ;
-    private int iter, xShift = 0, yShift = 0;
+    private int xShift = 0, yShift = 0;
     private int zoom = 1;
-    private Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-    private Color defaultColor = new Color(255,255,255), previousColor;
+
+
+
+    private final static Color defaultColor = new Color(255,255,255);
+    private Color previousColor;
+
     private boolean random = false;
-    public static LinkedList<Fractal> fractals = new LinkedList<Fractal>();
+    public static ArrayList<Fractal> fractals = new ArrayList<Fractal>();
 
     String[] fractalTypes = {
             "Tree",

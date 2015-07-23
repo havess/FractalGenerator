@@ -30,7 +30,6 @@ public class ColorChooser extends JFrame {
         setLocationRelativeTo(null);
         setVisible(true);
         
-        //assigne a chaque fractale la couleur choisi si on pousse "ok"
         select.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
