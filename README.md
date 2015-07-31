@@ -5,8 +5,10 @@ This is a work in progress and was quickly done in a couple of weeks hence some 
 
 Things to do:
 <ol>
-  <li>Convert graphics to image and then cache image so that we can resize instead of drawing new Fractal every zoom or shift change.</li>
-  <li>Improve layout with some JGoodies</li>
+  <li> Clean up code, polish multithreading logic </li>
+  <li>Performance enhancements</li>
+  <li>Layout cleanup</li>
   <li>Add more Fractal types</li>
+  <li>Fix bugs</li>
 </ol>
   
