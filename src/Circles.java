@@ -1,4 +1,4 @@
-import javax.rmi.CORBA.Util;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -11,7 +11,7 @@ public class Circles extends Fractal{
     }
 
     public void drawCircle(Graphics g, int x1, int y1, int iter, int radius) {
-        if(iter >= 0) {
+        if(iter >= 0 && Drawer.isRunning()) {
 
             if(Window.getInstance().isRandom()) {
                 Color iterationColor = util.generateRandom(color);
@@ -22,17 +22,15 @@ public class Circles extends Fractal{
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
             g2d.setStroke(new BasicStroke(0.1f * radius));
-            if(!((x1 + xShift + radius < 0 ) || (x1 + xShift - radius> panel.getWidth())
-            		|| (y1 + yShift + radius < 0 ) || (y1 + yShift - radius > panel.getWidth()))){
+            if(!((x1 + xShift + radius < 0 ) || (x1 + xShift - radius > panel.getWidth())
+            		|| (y1 + yShift + radius < 0 ) || (y1 + yShift - radius > panel.getHeight()))){
             	g2d.drawOval(x1 + xShift, y1 + yShift, radius, radius);
            }
-
             drawCircle(g, x1 + radius / 4, y1 - radius / 4, iter - 1, radius / 2);
             drawCircle(g, x1 + 3 * (radius / 4), y1 + radius / 4, iter - 1, radius / 2);
             drawCircle(g, x1 - radius / 4, y1 + radius / 4, iter - 1, radius / 2);
             drawCircle(g, x1 + radius / 4, y1 + 3 * (radius / 4), iter - 1, radius / 2);
         }
-
     }
 
 

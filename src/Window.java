@@ -7,9 +7,15 @@ import java.util.ArrayList;
 
 public class Window{
 
+    private Thread tUp = null;
+    private Thread tDraw = null;
+    private Drawer d = null;
+
 	private static final long serialVersionUID = 1L;
     private static Window instance;
-    private final static Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+    public static boolean updateRequested;
+    final static Dimension SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize();
+
 
     JFrame frame;
     JPanel container, optionsPanel;
@@ -39,14 +45,8 @@ public class Window{
     };
 
     int [] iterationNums =  {
-            1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20
+            1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,40
     };
-
-
-
-    public static void main(String[] args){
-        getInstance();
-    }
 
    public Window(){
        frame = new JFrame("Fractal Generator");
@@ -55,12 +55,12 @@ public class Window{
        
        //GUI
        setLookAndFeel();
-       frame.setSize(screenSize);
+       frame.setSize(SCREEN_SIZE);
        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
        frame.setResizable(false);
 
        container = new JPanel();
-       container.setSize(screenSize);
+       container.setSize(SCREEN_SIZE);
        container.setLayout(new BoxLayout(container, BoxLayout.LINE_AXIS));
 
        drawingPanel = new DrawingPanel();
@@ -112,28 +112,34 @@ public class Window{
            randomColors.addItem(randomColorsType);
        }
        randomColors.addActionListener(e -> {
-           JComboBox temp = (JComboBox) e.getSource();
-           String selectedItem = (String) temp.getSelectedItem();
+
+           String selectedItem = (String) randomColors.getSelectedItem();
+           Color newColor;
 
            if (!selectedItem.equals(randomColorsTypes[0])) {
                colorChooserButton.setEnabled(false);
-               for (Fractal tempFrac : fractals) {
-                   previousColor = tempFrac.getColor();
+               previousColor = fractals.get(0).color;
 
-                   if (selectedItem.equals(randomColorsTypes[1])) {
-                       tempFrac.color = new Color(255, 255, 255); //pastels
-                   } else if (selectedItem.equals(randomColorsTypes[2])) {
-                       tempFrac.color = new Color(57, 255, 15); //forest
-                   } else if (selectedItem.equals(randomColorsTypes[3])) {
-                       tempFrac.color = new Color(3, 128, 255); //ocean
-                   }
+               if (selectedItem.equals(randomColorsTypes[1])) {
+                   newColor = new Color(255, 255, 255); //pastels
+               } else if (selectedItem.equals(randomColorsTypes[2])) {
+                   newColor = new Color(57, 255, 15); //forest
+               } else if (selectedItem.equals(randomColorsTypes[3])) {
+                   newColor = new Color(3, 128, 255); //ocean
+               }else{
+                   newColor = null;
                }
+
            } else {
                colorChooserButton.setEnabled(true);
-               for (Fractal tempFrac : fractals) {
-                   tempFrac.color = previousColor;
-               }
+               newColor = previousColor;
            }
+
+           updateRequested = true;
+           Updater update = new Updater("color update", "color", newColor);
+           tUp = new Thread(update, "color update");
+           tUp.start();
+           System.out.println("Update successful");
 
        });
        optionsPanel.add(randomColors);
@@ -165,7 +171,6 @@ public class Window{
        minus.setPreferredSize(new Dimension(40, 40));
        minus.setFont(minus.getFont().deriveFont(Font.BOLD));
        minus.setAlignmentX(Component.CENTER_ALIGNMENT);
-       //minus.addActionListener();
        zoomPanel.add(minus);
 
        plus = new JButton("+");
@@ -211,15 +216,6 @@ public class Window{
        ySlider.setPaintTicks(true);
        ySlider.setPaintLabels(false);
        ySlider.setValue(0);
-       ySlider.addChangeListener(e -> {
-           drawingPanel.paintComponent(drawingPanel.getGraphics());
-
-           for (Fractal temp : fractals) {
-               temp.yShift = ySlider.getValue();
-           }
-
-           drawingPanel.repaint();
-       });
        optionsPanel.add(ySlider);
 
        xLabel = new JLabel("X shift");
@@ -237,13 +233,6 @@ public class Window{
        xSlider.setPaintTicks(true);
        xSlider.setPaintLabels(false);
        xSlider.setValue(0);
-       xSlider.addChangeListener(e -> {
-           drawingPanel.paintComponent(drawingPanel.getGraphics());
-           for (Fractal temp : fractals) {
-               temp.xShift = xSlider.getValue();
-           }
-           drawingPanel.repaint();
-       });
        optionsPanel.add(xSlider);
 
        JPanel buttonPanel = new JPanel();
@@ -283,7 +272,24 @@ public class Window{
 
        });
 
-       plus.addMouseListener(new MouseAdapter() {
+       ySlider.addChangeListener(e -> {
+           drawingPanel.paintComponent(drawingPanel.getGraphics());
+
+           for (Fractal temp : fractals) {
+               temp.yShift = ySlider.getValue();
+           }
+           drawingPanel.repaint();
+       });
+
+       xSlider.addChangeListener(e -> {
+           drawingPanel.paintComponent(drawingPanel.getGraphics());
+           for (Fractal temp : fractals) {
+               temp.xShift = xSlider.getValue();
+           }
+           drawingPanel.repaint();
+       });
+
+       /*plus.addMouseListener(new MouseAdapter() {
 
            @Override
            public void mouseClicked(MouseEvent e) {
@@ -296,9 +302,9 @@ public class Window{
                }
                drawingPanel.repaint();
            }
-       });
+       });*/
 
-       minus.addMouseListener(new MouseAdapter() {
+       /*minus.addMouseListener(new MouseAdapter() {
 
            @Override
            public void mouseClicked(MouseEvent e) {
@@ -312,9 +318,17 @@ public class Window{
                }
                drawingPanel.repaint();
            }
-       });
+       });*/
        
        zoomSlider.addChangeListener(e -> {
+           if(tDraw != null){
+               try{
+                   Drawer.terminate();
+                   tDraw.join();
+               }catch (InterruptedException exc){
+                   //ignore
+               }
+           }
            drawingPanel.paintComponent(drawingPanel.getGraphics());
 
            for (Fractal temp : fractals) {
@@ -325,15 +339,28 @@ public class Window{
 
        draw.addMouseListener(new MouseAdapter() {
 
+
            @Override
-           public void mouseClicked(MouseEvent e) {
+           public void mousePressed(MouseEvent e) {
+               if(tDraw != null){
+                   try{
+                       Drawer.terminate();
+                       tDraw.join();
+                   }catch (InterruptedException exc){
+                       //ignore
+                   }
+               }
                drawingPanel.paintComponent(drawingPanel.getGraphics());
                checkComboBox();
 
                for (Fractal temp : fractals) {
                    temp.iter = Integer.parseInt((String)iterations.getSelectedItem()) ;
                }
-               drawingPanel.repaint();
+
+               Drawer d = new Drawer("Fractal Drawer", drawingPanel.getGraphics(),curId);
+               tDraw = new Thread(d, "Fractal Drawer");
+               tDraw.start();
+               System.out.println("Created thread ready to be clicked again");
            }
        });
 
@@ -365,14 +392,14 @@ public class Window{
 
     private void checkComboBox(){
 
-        String chosenFractal = fractalType.getSelectedItem().toString();
+        int chosenFractal = fractalType.getSelectedIndex();
         
         switch(chosenFractal){
-            case "Circles":
-                this.curId = ID.Circles;
-                break;
-            case "Tree":
+            case 0:
                 this.curId = ID.Tree;
+                break;
+            case 1:
+                this.curId = ID.Circles;
                 break;
         }
 
@@ -380,20 +407,22 @@ public class Window{
 
     private class DrawingPanel extends JPanel {
 
-        public DrawingPanel(){
-            setDoubleBuffered(true);
-        }
-
         @Override
         protected void paintComponent(Graphics g) {
+
             super.paintComponent(g);
             g.setColor(Color.darkGray);
         }
 
         @Override
         public void repaint(){
-            fractals.stream().filter(temp -> temp.getID() == curId).forEach(temp -> temp.drawFractal(this.getGraphics()));
-
+            if(Updater.vFractals != null && !Drawer.isRunning()){
+                fractals = new ArrayList<>(Updater.vFractals);
+                System.out.println("cloned vFractals");
+            }
+            Drawer d = new Drawer("Fractal Drawer", this.getGraphics(),curId);
+            tDraw = new Thread(d, "Fractal Drawer");
+            tDraw.start();
         }
 
     }

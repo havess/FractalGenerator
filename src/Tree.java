@@ -14,7 +14,7 @@ public class Tree extends Fractal{
     }
 
     public void drawTree(Graphics g, int x1, int y1, double angle, int iter) {
-        if(iter >= 0){
+        if(iter >= 0 && Drawer.isRunning()){
 
             if(Window.getInstance().isRandom()) {
                 Color iterationColor = util.generateRandom(color);
@@ -46,6 +46,4 @@ public class Tree extends Fractal{
             g.setColor(color);
             drawTree(g, width / 2, height - 75, -90, iter);
     }
-
-
 }
