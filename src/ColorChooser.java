@@ -3,18 +3,19 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-public class ColorChooser extends JFrame {
+public class ColorChooser implements Runnable{
 
     JColorChooser colorChooser = new JColorChooser();
     JPanel colorPanel = new JPanel(),buttonPanel = new JPanel();
     JButton select, cancel;
 
     public ColorChooser(){
-        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        setResizable(false);
-        setLayout(new BoxLayout(getContentPane(), BoxLayout.PAGE_AXIS));
+        JFrame frame = new JFrame();
+        frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        frame.setResizable(false);
+        frame.setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.PAGE_AXIS));
         colorPanel.add(colorChooser);
-        add(colorPanel);
+        frame.add(colorPanel);
         buttonPanel.setBackground(Color.darkGray);
         buttonPanel.setSize(new Dimension(706, 40));
         buttonPanel.setLayout(new FlowLayout());
@@ -22,18 +23,16 @@ public class ColorChooser extends JFrame {
         cancel = new JButton("Cancel");
         buttonPanel.add(select);
         buttonPanel.add(cancel);
-        add(buttonPanel);
-        pack();
-        setLocationRelativeTo(null);
-        setVisible(true);
+        frame.add(buttonPanel);
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
         
         select.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                for (Fractal temp : Window.fractals) {
-                    temp.color = colorChooser.getColor();
-                }
-                dispose();
+                Window.curColor = colorChooser.getColor();
+                frame.dispose();
             }
 
         });
@@ -41,9 +40,14 @@ public class ColorChooser extends JFrame {
         cancel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                dispose();
+                frame.dispose();
             }
 
         });
+    }
+
+    @Override
+    public void run() {
+
     }
 }
