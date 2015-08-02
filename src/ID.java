@@ -4,5 +4,6 @@
 public enum ID {
 	//identifications pour les fractales
     Circles(),
-    Tree();
+    Tree(),
+    Fern();
 }

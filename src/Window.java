@@ -34,7 +34,8 @@ public class Window{
 
     String[] fractalTypes = {
             "Tree",
-            "Circles"
+            "Circles",
+            "Fern"
     }, randomColorsTypes = {
             "Solid Color",
             "Pastels",
@@ -83,6 +84,13 @@ public class Window{
        for (String fractalType1 : fractalTypes) {
            fractalType.addItem(fractalType1);
        }
+       fractalType.addActionListener(e -> {
+           if(fractalType.getSelectedItem() == fractalTypes[2]){
+               iterations.setEnabled(false);
+           }else{
+               iterations.setEnabled(true);
+           }
+       });
        optionsPanel.add(fractalType);
 
 
@@ -343,7 +351,7 @@ public class Window{
                 Drawer.terminate();
                 tDraw.join();
             }catch (InterruptedException exc){
-                //ignore
+                exc.printStackTrace();
             }
         }
         drawingPanel.paintComponent(drawingPanel.getGraphics());
@@ -373,6 +381,8 @@ public class Window{
             case 1:
                 this.curId = ID.Circles;
                 break;
+            case 2:
+                this.curId = ID.Fern;
         }
 
     }
@@ -390,8 +400,7 @@ public class Window{
             // must keep a copy of the previous iteration number so a change
             //      in combobox without pressing draw wont affect current fractal
             if(dimensionChange){
-                drawer = new Drawer("Fractal Drawer", drawIter, zoom, xShift, yShift, this.getGraphics(),
-                        previousColor,drawingPanel,curId);
+                drawer.update(drawingPanel.getGraphics(), drawIter, zoom, xShift, yShift, curColor, curId);
                 tDraw = new Thread(drawer, "Fractal Drawer");
                 tDraw.start();
                 dimensionChange = false;
