@@ -3,6 +3,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 
 public class Window{
@@ -12,7 +14,7 @@ public class Window{
 
 	private static final long serialVersionUID = 1L;
     private static Window instance;
-    private boolean firstDraw = true, dimensionChange;
+    private boolean firstDraw = true, shift;
     final static Dimension SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize();
 
 
@@ -273,15 +275,15 @@ public class Window{
 
        ySlider.addChangeListener(e -> {
            clear();
-           dimensionChange = true;
            this.yShift = ySlider.getValue();
+           this.shift = true;
            drawingPanel.repaint();
        });
 
        xSlider.addChangeListener(e -> {
            clear();
-           dimensionChange = true;
            this.xShift = xSlider.getValue();
+           this.shift = true;
            drawingPanel.repaint();
        });
 
@@ -308,7 +310,6 @@ public class Window{
        
        zoomSlider.addChangeListener(e -> {
            clear();
-           dimensionChange = true;
            this.zoom = zoomSlider.getValue();
            drawingPanel.repaint();
        });
@@ -370,6 +371,14 @@ public class Window{
         return randomColors.getSelectedIndex() != 0;
     }
 
+    public boolean isShift(){
+        return this.shift;
+    }
+
+    public void setShift(boolean value){
+        this.shift = value;
+    }
+
     private void checkComboBox(){
 
         int chosenFractal = fractalType.getSelectedIndex();
@@ -387,7 +396,13 @@ public class Window{
 
     }
 
-    private class DrawingPanel extends JPanel {
+    private class DrawingPanel extends JPanel{
+
+
+        public DrawingPanel(){
+            addMouseListener(ma);
+            addMouseMotionListener(ma);
+        }
 
         @Override
         protected void paintComponent(Graphics g) {
@@ -399,13 +414,41 @@ public class Window{
         public void repaint(){
             // must keep a copy of the previous iteration number so a change
             //      in combobox without pressing draw wont affect current fractal
-            if(dimensionChange){
+            if(!firstDraw) {
                 drawer.update(drawingPanel.getGraphics(), drawIter, zoom, xShift, yShift, curColor, curId);
                 tDraw = new Thread(drawer, "Fractal Drawer");
                 tDraw.start();
-                dimensionChange = false;
             }
         }
 
+        MouseAdapter ma = new MouseAdapter() {
+            Point startPoint, endPoint= new Point (0,0);
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                startPoint = e.getPoint();
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                startPoint = null;
+                endPoint = new Point(getWidth()/2 + xShift, getHeight()/2 + yShift);
+            }
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                Point p = e.getPoint();
+                int x = p.x - startPoint.x;
+                int y = p.y - startPoint.x;
+                xShift = endPoint.x + x;
+                yShift = endPoint.y + y;
+                clear();
+                repaint();
+            }
+
+        };
+
+
     }
+
 }

@@ -3,7 +3,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-public class ColorChooser implements Runnable{
+public class ColorChooser{
 
     JColorChooser colorChooser = new JColorChooser();
     JPanel colorPanel = new JPanel(),buttonPanel = new JPanel();
@@ -44,10 +44,5 @@ public class ColorChooser implements Runnable{
             }
 
         });
-    }
-
-    @Override
-    public void run() {
-
     }
 }

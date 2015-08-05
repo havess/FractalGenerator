@@ -4,13 +4,17 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.LinkedList;
-import java.util.Random;
 
 public class Drawer implements Runnable{
 
     private Utilities util = new Utilities();
+    private Writer write;
+    private BufferedImage fracImage;
+    private Graphics2D g2d;
+
 
     private String threadName;
+    private File f;
     private Graphics g;
     private ID curId;
     private int iter,zoom,xShift,yShift, width, height;
@@ -20,17 +24,13 @@ public class Drawer implements Runnable{
     private static boolean running;
 
 
-    //numbers for fern fractal
-    private final int p1 = 77, p2 = 89, p3 = 99;
-    private int p;
-    private double x, xT, y;
-    private Random r = new Random();
-
-
 
     public Drawer(String threadName, int iter, int zoom, int xShift, int yShift, Graphics g, Color color, JPanel panel, ID id){
         this.threadName = threadName;
         this.g = g;
+        this.fracImage = new BufferedImage(panel.getWidth(), panel.getHeight(),
+                BufferedImage.TYPE_INT_ARGB);
+        this.g2d = fracImage.createGraphics();
         this.iter = iter;
         this.zoom = zoom;
         this.xShift = xShift;
@@ -57,9 +57,14 @@ public class Drawer implements Runnable{
     @Override
     public void run() {
         if(running){
+            f = new File("cache/coordinates/" + curId.name() + "/" + iter +".txt");
             drawFractal();
+            if(!f.exists()){
+                write = new Writer("File Writer", curId, iter, coords);
+                Thread writer = new Thread(write, "File Writer");
+                writer.start();
+            }
         }
-
     }
 
     public static boolean isRunning(){
@@ -72,55 +77,60 @@ public class Drawer implements Runnable{
 
     private void drawFractal(){
         g.setColor(color);
-        File f = new File("coords.txt");
+        coords = new LinkedList<>();
         if(curId == ID.Tree){
-            drawTree(width / 2, height - 300, -90, iter);
+            if(!Window.getInstance().isShift()){
+                this.fracImage = new BufferedImage(panel.getWidth(), panel.getHeight(),
+                        BufferedImage.TYPE_INT_ARGB);
+                this.g2d = fracImage.createGraphics();
+                drawTree(width / 2 + xShift, height - 300 + yShift, -90, iter);
+                this.g.drawImage(fracImage, 0, 0, null);
+            }else{
+                this.g.drawImage(fracImage,xShift, yShift,null);
+                Window.getInstance().setShift(false);
+            }
         }else if(curId == ID.Circles){
             drawCircle(width / 2 - (zoom * zoom) / 2, height / 2 - (zoom * zoom) / 2, iter, zoom * zoom);
         }else if(curId == ID.Fern){
             drawFern();
         }
-
-        //after done rendering write coordinates to file,
-        // TODO: integrate replace file logic and shtuff
-
-        /*try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
-                new FileOutputStream("coords" + iter + ".txt"), "utf-8"))) {
-            for(Point p: coords){
-                writer.write(p.x + " " + p.y);
-                writer.newLine();
-            }
-
-        }catch (IOException e){
-            System.out.println("file was not created");
-        }*/
     }
 
     private void drawTree(int x1, int y1, double angle, int iter) {
         if(iter >= 0 && isRunning()){
+            if( f.exists()){
+                try(BufferedReader br = new BufferedReader(new FileReader(f))) {
+                    for(String line; (line = br.readLine()) != null; ) {
+                        int x2 =
+                    }
+                }catch (IOException e){
+                    e.printStackTrace();
+                }
+            }else{
+                if(Window.getInstance().isRandom()) {
+                    Color iterationColor = util.generateRandom(color);
+                    g.setColor(iterationColor);
+                }
 
-            if(Window.getInstance().isRandom()) {
-                Color iterationColor = util.generateRandom(color);
-                g.setColor(iterationColor);
+                int x2 = x1 + (int) (Math.cos(Math.toRadians(angle)) * iter * zoom);
+                int y2 = y1 + (int) (Math.sin(Math.toRadians(angle)) * iter * zoom);
+
+                coords.add(new Point(x2,y2));
+
+                //Graphics2D g2d = (Graphics2D) g;
+                this.g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                this.g2d.setStroke(new BasicStroke(0.5f * iter));
+
+                //don't draw line if outside of visible area, speeds up zoomed scrolling
+                if(!((x1 < 0 && x2 < 0) || (x1 > width && x2> width)
+                        || (y1  < 0 && y2 < 0) || (y1 > height && y2 > height))) {
+                    this.g2d.drawLine(x1, y1, x2 , y2 );
+                }
+
+                drawTree(x2, y2, angle + 30, iter - 1);
+                drawTree(x2, y2, angle - 30, iter - 1);
             }
 
-            int x2 = x1 + (int) (Math.cos(Math.toRadians(angle)) * iter * zoom);
-            int y2 = y1 + (int) (Math.sin(Math.toRadians(angle)) * iter * zoom);
-
-            coords.add(new Point(x2,y2));
-
-            Graphics2D g2d = (Graphics2D) g;
-            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2d.setStroke(new BasicStroke(0.5f * iter));
-
-            //don't draw line if outside of visible area, speeds up zoomed scrolling
-            if(!((x1 + xShift < 0 && x2 + xShift < 0) || (x1 + xShift > width && x2 + xShift > width)
-                    || (y1 + yShift < 0 && y2 + yShift < 0) || (y1 + yShift > height && y2 + yShift > height))) {
-                g2d.drawLine(x1 + xShift, y1 + yShift, x2 + xShift, y2 + yShift);
-            }
-
-            drawTree(x2, y2, angle + 30, iter - 1);
-            drawTree(x2, y2, angle - 30, iter - 1);
 
         }
     }
