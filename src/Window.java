@@ -16,14 +16,14 @@ public class Window{
 
     JFrame frame;
     JPanel container, optionsPanel;
-    JButton draw, colorChooserButton, printButton, plus, minus;
+    JButton draw, colorChooserButton, printButton, plus, minus, center;
     JComboBox<String> fractalType, iterations;
     JComboBox<String> randomColors;
-    JLabel fractalLabel, iterLabel, randomColorLabel,emptySpace, zoomLabel;
-    JSlider zoomSlider;
+    JLabel fractalLabel, iterLabel, randomColorLabel,emptySpace, zoomLabel, angleLabel;
+    JSlider zoomSlider, angleSlider;
     private DrawingPanel drawingPanel = new DrawingPanel();
 
-    private int iter = 1, drawIter = 1, zoom = 1, xShift = 0, yShift = 0, previousColorIndex = 0, lastChange = 0;
+    private int iter = 1, drawIter = 1, zoom = 1, xShift = 0, yShift = 0, previousColorIndex = 0, lastChange = 0, angle;
     private ID curId ;
 
 
@@ -84,9 +84,20 @@ public class Window{
        }
        fractalType.addActionListener(e -> {
            if (fractalType.getSelectedItem() == fractalTypes[2]) {
-               iterations.setEnabled(false);
+               iterations.setVisible(false);
+               iterLabel.setVisible(false);
+               angleSlider.setVisible(false);
+               angleLabel.setVisible(false);
            } else {
-               iterations.setEnabled(true);
+               if (fractalType.getSelectedItem() == fractalTypes[0]) {
+                   angleSlider.setVisible(true);
+                   angleLabel.setVisible(true);
+               } else {
+                   angleSlider.setVisible(false);
+                   angleLabel.setVisible(false);
+               }
+               iterations.setVisible(true);
+               iterLabel.setVisible(true);
            }
        });
        optionsPanel.add(fractalType);
@@ -141,6 +152,8 @@ public class Window{
        });
        optionsPanel.add(randomColors);
 
+
+       // makeshift margins
        emptySpace = new JLabel("  ");
        emptySpace.setPreferredSize(new Dimension(190, 2));
        optionsPanel.add(emptySpace);
@@ -151,9 +164,24 @@ public class Window{
        colorChooserButton.setFont(colorChooserButton.getFont().deriveFont(Font.BOLD));
        optionsPanel.add(colorChooserButton);
 
-       emptySpace = new JLabel("  ");
-       emptySpace.setPreferredSize(new Dimension(190, 2));
        optionsPanel.add(emptySpace);
+
+       angleLabel = new JLabel("Angle");
+       angleLabel.setForeground(Color.lightGray);
+       angleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+       optionsPanel.add(angleLabel);
+
+       angleSlider = new JSlider();
+       angleSlider = new JSlider();
+       angleSlider.setPreferredSize(new Dimension(190, 20));
+       angleSlider.setBackground(Color.black);
+       angleSlider.setMaximum(90);
+       angleSlider.setMinimum(-90);
+       angleSlider.setMinorTickSpacing(1);
+       angleSlider.setPaintTicks(true);
+       angleSlider.setPaintLabels(true);
+       angleSlider.setValue(0);
+       optionsPanel.add(angleSlider);
 
        zoomLabel = new JLabel("Zoom");
        zoomLabel.setForeground(Color.lightGray);
@@ -192,7 +220,6 @@ public class Window{
        zoomSlider.setPaintTicks(true);
        zoomSlider.setPaintLabels(false);
        zoomSlider.setValue(0);
-
        optionsPanel.add(zoomSlider);
 
        emptySpace = new JLabel("  ");
@@ -201,8 +228,24 @@ public class Window{
 
        JPanel buttonPanel = new JPanel();
        buttonPanel.setBackground(optionsPanelColor);
-       buttonPanel.setPreferredSize(new Dimension(200, 50));
+       buttonPanel.setPreferredSize(new Dimension(200, 100));
        buttonPanel.setLayout(new FlowLayout());
+
+       center = new JButton("Center");
+       center.setPreferredSize(new Dimension(80, 30));
+       center.setFont(center.getFont().deriveFont(Font.BOLD));
+       center.setAlignmentX(Component.CENTER_ALIGNMENT);
+       center.addMouseListener(new MouseAdapter() {
+           @Override
+           public void mouseClicked(MouseEvent e) {
+               clear();
+               xShift = 0;
+               yShift = 0;
+               drawingPanel.repaint();
+           }
+       });
+       optionsPanel.add(center);
+
        draw = new JButton("Draw");
        draw.setPreferredSize(new Dimension(80, 30));
        draw.setFont(draw.getFont().deriveFont(Font.BOLD));
@@ -216,6 +259,7 @@ public class Window{
        printButton.addActionListener(new PrintPanel(drawingPanel));
        buttonPanel.add(printButton);
        optionsPanel.add(buttonPanel);
+
 
        JLabel filler = new JLabel(new ImageIcon("carbon.png"));
        optionsPanel.add(filler);
@@ -233,6 +277,12 @@ public class Window{
                    new ColorChooser();
                }
            }
+       });
+
+       angleSlider.addChangeListener(e -> {
+           clear();
+           this.angle = angleSlider.getValue();
+           drawingPanel.repaint();
        });
 
        plus.addMouseListener(new MouseAdapter() {
@@ -289,11 +339,11 @@ public class Window{
                Drawer.setNewColors(true);
                drawIter = iter;
                if(firstDraw){
-                   drawer = new Drawer("Fractal Drawer", iter, zoom, xShift, yShift, drawingPanel.getGraphics(),
+                   drawer = new Drawer("Fractal Drawer", iter, zoom,angle, xShift, yShift, drawingPanel.getGraphics(),
                            curColor,drawingPanel,curId);
                    firstDraw = false;
                }else{
-                   drawer.update(drawingPanel.getGraphics(), iter, zoom, xShift, yShift, curColor, curId);
+                   drawer.update(drawingPanel.getGraphics(), iter, zoom,angle, xShift, yShift, curColor, curId);
                }
                tDraw = new Thread(drawer, "Fractal Drawer");
                tDraw.start();
@@ -381,9 +431,9 @@ public class Window{
                 if(!isRandom() || previousColorIndex == 0){
                     curColor = previousColor;
                 }
-                drawer.update(drawingPanel.getGraphics(), drawIter, zoom, xShift, yShift, curColor, curId);
+                drawer.update(drawingPanel.getGraphics(), drawIter, zoom, angle, xShift, yShift, curColor, curId);
                 tDraw = new Thread(drawer, "Fractal Drawer");
-            tDraw.start();
+                tDraw.start();
             }
         }
 

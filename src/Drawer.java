@@ -1,9 +1,7 @@
-import javax.imageio.ImageIO;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.LinkedList;
-
 public class Drawer implements Runnable{
 
     private Utilities util = new Utilities();
@@ -11,7 +9,7 @@ public class Drawer implements Runnable{
     private String threadName;
     private Graphics g;
     private ID curId;
-    private int iter,zoom,xShift,yShift, width, height, lineCount = 0;
+    private int iter,zoom,angle,xShift,yShift, width, height, lineCount = 0;
     private Color color;
     private JPanel panel;
     private ArrayList<Color> colors;
@@ -20,11 +18,12 @@ public class Drawer implements Runnable{
 
 
 
-    public Drawer(String threadName, int iter, int zoom, int xShift, int yShift, Graphics g, Color color, JPanel panel, ID id){
+    public Drawer(String threadName, int iter, int zoom,int angle, int xShift, int yShift, Graphics g, Color color, JPanel panel, ID id){
         this.threadName = threadName;
         this.g = g;
         this.iter = iter;
         this.zoom = zoom;
+        this.angle = angle;
         this.xShift = xShift;
         this.yShift = yShift;
         this.color = color;
@@ -35,10 +34,11 @@ public class Drawer implements Runnable{
         running = true;
     }
 
-    public void update(Graphics g,int iter, int zoom, int xShift, int yShift, Color color, ID id) {
+    public void update(Graphics g,int iter, int zoom,int angle, int xShift, int yShift, Color color, ID id) {
         this.g = g;
         this.iter = iter;
         this.zoom = zoom;
+        this.angle = angle;
         this.xShift = xShift;
         this.yShift = yShift;
         this.color = color;
@@ -96,8 +96,8 @@ public class Drawer implements Runnable{
                 g2d.drawLine(x1, y1, x2 , y2 );
             }
 
-            drawTree(x2, y2, angle + 30, iter - 1);
-            drawTree(x2, y2, angle - 30, iter - 1);
+            drawTree(x2, y2, angle + this.angle, iter - 1);
+            drawTree(x2, y2, angle - this.angle, iter - 1);
         }
 
 
