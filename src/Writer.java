@@ -6,17 +6,12 @@ import java.io.OutputStreamWriter;
 import java.util.LinkedList;
 
 public class Writer implements Runnable {
-    private String threadName;
-    private ID id;
-    private int iter;
-    private LinkedList<Point> coords;
+    private String threadName, filePath;
     private static boolean running;
 
-    public Writer(String threadName, ID id, int iter, LinkedList<Point> coords) {
+    public Writer(String threadName, String filePath) {
         this.threadName = threadName;
-        this.id = id;
-        this.iter = iter;
-        this.coords = coords;
+        this.filePath = filePath;
     }
 
     @Override
@@ -27,11 +22,8 @@ public class Writer implements Runnable {
 
     private boolean createFile(){
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
-                new FileOutputStream("cache/coordinates/"+ id.name() + "/" + iter + ".txt"), "utf-8"))) {
-            for(Point p: this.coords){
-                writer.write(p.x + " " + p.y);
-                writer.newLine();
-            }
+                new FileOutputStream(filePath), "utf-8"))) {
+            //write file
             return true;
 
         }catch (IOException e){

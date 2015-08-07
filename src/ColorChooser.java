@@ -32,6 +32,7 @@ public class ColorChooser{
             @Override
             public void mouseClicked(MouseEvent e) {
                 Window.curColor = colorChooser.getColor();
+                Window.previousColor = Window.curColor;
                 frame.dispose();
             }
 

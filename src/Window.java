@@ -3,18 +3,14 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.util.ArrayList;
 
 public class Window{
 
     private Thread tDraw = null;
     private Drawer drawer = null;
 
-	private static final long serialVersionUID = 1L;
     private static Window instance;
-    private boolean firstDraw = true, shift;
+    private boolean firstDraw = true;
     final static Dimension SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize();
 
 
@@ -23,11 +19,11 @@ public class Window{
     JButton draw, colorChooserButton, printButton, plus, minus;
     JComboBox<String> fractalType, iterations;
     JComboBox<String> randomColors;
-    JLabel fractalLabel, iterLabel, randomColorLabel,emptySpace, zoomLabel, xLabel, yLabel;
-    JSlider zoomSlider, xSlider, ySlider;
+    JLabel fractalLabel, iterLabel, randomColorLabel,emptySpace, zoomLabel;
+    JSlider zoomSlider;
     private DrawingPanel drawingPanel = new DrawingPanel();
 
-    private int iter = 1, drawIter = 1, zoom = 1, xShift = 0, yShift = 0;
+    private int iter = 1, drawIter = 1, zoom = 1, xShift = 0, yShift = 0, previousColorIndex = 0, lastChange = 0;
     private ID curId ;
 
 
@@ -87,9 +83,9 @@ public class Window{
            fractalType.addItem(fractalType1);
        }
        fractalType.addActionListener(e -> {
-           if(fractalType.getSelectedItem() == fractalTypes[2]){
+           if (fractalType.getSelectedItem() == fractalTypes[2]) {
                iterations.setEnabled(false);
-           }else{
+           } else {
                iterations.setEnabled(true);
            }
        });
@@ -124,23 +120,22 @@ public class Window{
        }
        randomColors.addActionListener(e -> {
 
-           String selectedItem = (String) randomColors.getSelectedItem();
+           int index = randomColors.getSelectedIndex();
+           System.out.println(index);
 
-           if (!selectedItem.equals(randomColorsTypes[0])) {
+           if (index != 0) {
                colorChooserButton.setEnabled(false);
-               previousColor = curColor;
 
-               if (selectedItem.equals(randomColorsTypes[1])) {
+               if (index == 1) {
                    curColor = new Color(255, 255, 255); //pastels
-               } else if (selectedItem.equals(randomColorsTypes[2])) {
+               } else if (index == 2) {
                    curColor = new Color(57, 255, 15); //forest
-               } else if (selectedItem.equals(randomColorsTypes[3])) {
+               } else if (index == 3) {
                    curColor = new Color(3, 128, 255); //ocean
                }
 
            } else {
                colorChooserButton.setEnabled(true);
-               curColor = previousColor;
            }
 
        });
@@ -191,51 +186,18 @@ public class Window{
        zoomSlider = new JSlider();
        zoomSlider.setPreferredSize(new Dimension(190, 20));
        zoomSlider.setBackground(Color.black);
-       zoomSlider.setMaximum(30);
-       zoomSlider.setMinimum(1);
-       zoomSlider.setMajorTickSpacing(29);
+       zoomSlider.setMaximum(20);
+       zoomSlider.setMinimum(-20);
        zoomSlider.setMinorTickSpacing(1);
        zoomSlider.setPaintTicks(true);
        zoomSlider.setPaintLabels(false);
-       zoomSlider.setValue(1);
+       zoomSlider.setValue(0);
+
        optionsPanel.add(zoomSlider);
 
        emptySpace = new JLabel("  ");
        emptySpace.setPreferredSize(new Dimension(190, 2));
        optionsPanel.add(emptySpace);
-
-       yLabel = new JLabel("Y Shift");
-       yLabel.setForeground(Color.lightGray);
-       yLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-       optionsPanel.add(yLabel);
-
-       ySlider = new JSlider(JSlider.VERTICAL);
-       ySlider.setBackground(Color.lightGray);
-       ySlider.setMinimum(-3000);
-       ySlider.setMaximum(3000);
-       ySlider.setMajorTickSpacing(1000);
-       ySlider.setMinorTickSpacing(200);
-       ySlider.setPaintTicks(true);
-       ySlider.setPaintLabels(false);
-       ySlider.setValue(0);
-       optionsPanel.add(ySlider);
-
-       xLabel = new JLabel("X shift");
-       xLabel.setForeground(Color.lightGray);
-       xLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-       optionsPanel.add(xLabel);
-
-       xSlider = new JSlider();
-       xSlider.setBackground(Color.lightGray);
-       xSlider.setPreferredSize(new Dimension(190, 20));
-       xSlider.setMinimum(-3000);
-       xSlider.setMaximum(3000);
-       xSlider.setMajorTickSpacing(1000);
-       xSlider.setMinorTickSpacing(200);
-       xSlider.setPaintTicks(true);
-       xSlider.setPaintLabels(false);
-       xSlider.setValue(0);
-       optionsPanel.add(xSlider);
 
        JPanel buttonPanel = new JPanel();
        buttonPanel.setBackground(optionsPanelColor);
@@ -273,45 +235,48 @@ public class Window{
            }
        });
 
-       ySlider.addChangeListener(e -> {
-           clear();
-           this.yShift = ySlider.getValue();
-           this.shift = true;
-           drawingPanel.repaint();
-       });
-
-       xSlider.addChangeListener(e -> {
-           clear();
-           this.xShift = xSlider.getValue();
-           this.shift = true;
-           drawingPanel.repaint();
-       });
-
-       /*plus.addMouseListener(new MouseAdapter() {
+       plus.addMouseListener(new MouseAdapter() {
 
            @Override
            public void mouseClicked(MouseEvent e) {
                drawingPanel.paintComponent(drawingPanel.getGraphics());
-
+               zoom += 2;
+               clear();
                drawingPanel.repaint();
            }
-       });*/
+       });
 
-       /*minus.addMouseListener(new MouseAdapter() {
+       minus.addMouseListener(new MouseAdapter() {
 
            @Override
            public void mouseClicked(MouseEvent e) {
                drawingPanel.paintComponent(drawingPanel.getGraphics());
-               
-
+               if(zoom > 2){
+                   zoom -= 2;
+               }
+               clear();
                drawingPanel.repaint();
            }
-       });*/
+       });
        
        zoomSlider.addChangeListener(e -> {
            clear();
-           this.zoom = zoomSlider.getValue();
+           int change = zoomSlider.getValue();
+           int zoomChange = zoom + change;
+           if(zoomChange > 0 && ((change > 0 && change > lastChange)
+                    || (zoomSlider.getValue() < 0 && change < lastChange))){
+               zoom = zoomChange;
+
+           }
            drawingPanel.repaint();
+           lastChange = change;
+       });
+
+       zoomSlider.addMouseListener(new MouseAdapter() {
+           @Override
+           public void mouseReleased(MouseEvent e) {
+               zoomSlider.setValue(0);
+           }
        });
 
        draw.addMouseListener(new MouseAdapter() {
@@ -321,17 +286,15 @@ public class Window{
            public void mousePressed(MouseEvent e) {
                clear();
                checkComboBox();
+               Drawer.setNewColors(true);
                drawIter = iter;
-
                if(firstDraw){
                    drawer = new Drawer("Fractal Drawer", iter, zoom, xShift, yShift, drawingPanel.getGraphics(),
                            curColor,drawingPanel,curId);
                    firstDraw = false;
                }else{
-                   System.out.println("updating.." + iter);
                    drawer.update(drawingPanel.getGraphics(), iter, zoom, xShift, yShift, curColor, curId);
                }
-
                tDraw = new Thread(drawer, "Fractal Drawer");
                tDraw.start();
            }
@@ -371,12 +334,13 @@ public class Window{
         return randomColors.getSelectedIndex() != 0;
     }
 
-    public boolean isShift(){
-        return this.shift;
-    }
-
-    public void setShift(boolean value){
-        this.shift = value;
+    private void setNewColors(){
+        if(previousColorIndex == randomColors.getSelectedIndex()){
+            Drawer.setNewColors(false);
+        }else{
+            Drawer.setNewColors(true);
+            previousColorIndex = randomColors.getSelectedIndex();
+        }
     }
 
     private void checkComboBox(){
@@ -397,8 +361,6 @@ public class Window{
     }
 
     private class DrawingPanel extends JPanel{
-
-
         public DrawingPanel(){
             addMouseListener(ma);
             addMouseMotionListener(ma);
@@ -415,33 +377,37 @@ public class Window{
             // must keep a copy of the previous iteration number so a change
             //      in combobox without pressing draw wont affect current fractal
             if(!firstDraw) {
+                setNewColors();
+                if(!isRandom() || previousColorIndex == 0){
+                    curColor = previousColor;
+                }
                 drawer.update(drawingPanel.getGraphics(), drawIter, zoom, xShift, yShift, curColor, curId);
                 tDraw = new Thread(drawer, "Fractal Drawer");
-                tDraw.start();
+            tDraw.start();
             }
         }
 
         MouseAdapter ma = new MouseAdapter() {
-            Point startPoint, endPoint= new Point (0,0);
+            Point startPoint, shiftStart;
 
             @Override
             public void mousePressed(MouseEvent e) {
                 startPoint = e.getPoint();
+                shiftStart = new Point(xShift, yShift);
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
                 startPoint = null;
-                endPoint = new Point(getWidth()/2 + xShift, getHeight()/2 + yShift);
             }
 
             @Override
             public void mouseDragged(MouseEvent e) {
                 Point p = e.getPoint();
                 int x = p.x - startPoint.x;
-                int y = p.y - startPoint.x;
-                xShift = endPoint.x + x;
-                yShift = endPoint.y + y;
+                int y = p.y - startPoint.y;
+                xShift = shiftStart.x + x;
+                yShift = shiftStart.y + y;
                 clear();
                 repaint();
             }
