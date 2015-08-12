@@ -11,19 +11,15 @@ public class PrintPanel implements Printable, ActionListener {
     public int print(Graphics g, PageFormat pf, int page) throws
             PrinterException {
 
-        if (page > 0) { 
-        	// si la page est hors du document arrete 
+        if (page > 0) {
             return NO_SUCH_PAGE;
         }
 
-        //pour qu'il n'est pas hors page
         Graphics2D g2d = (Graphics2D) g;
         g2d.translate(pf.getImageableX(), pf.getImageableY());
 
-        //ici on imprime
         panelToPrint.printAll(g);
 
-        //retourne la page fait partie du document
         return PAGE_EXISTS;
     }
 
@@ -35,7 +31,7 @@ public class PrintPanel implements Printable, ActionListener {
             try {
                 job.print();
             } catch (PrinterException ex) {
-              /* The job did not successfully complete */
+              //The job did not successfully complete
             }
         }
     }
